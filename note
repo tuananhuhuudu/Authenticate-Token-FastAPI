@@ -1,0 +1,32 @@
+1 Khi nào thì dùng username khi nào thì dùng id 
+==============================Đăng nhập==========================#
+Lúc đăng nhập dùng username hoặc email 
+Vì lúc đó người dùng mới nhập tài khoản thôi , chưa xác thực được , nên 
+mình phải dùng username hoặc email để tìm xem người đó có tồn tại trong hệ thống hay không 
+
+## Ví dụ 
+def get_user(username: str):
+    # Tìm trong database xem có user nào có username giống vậy không
+    user = db.query(User).filter(User.username == username).first()
+    return user
+
+
+==================================Sau khi đăng nhâp =======================#
+Sau khi người dùng đăng nhập thành công rồi , mình sẽ tạo JWT token , và trong token 
+đó mình lưu user_id 
+-> Từ giờ trở đi , mỗi lần gọi API , mình lấy id từ token ra để : 
+- Xác thực người gửi request là ai 
+- Tìm dữ liệu liên quan đến người đó 
+- Kiểm tra quyền của người đó 
+# Ví dụ 
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    user_id = payload.get("sub")  # sub chứa user_id
+    user = db.query(User).filter(User.id == user_id).first()
+    return user
+### 
+| Lý do            | Giải thích                                               |
+| ---------------- | -------------------------------------------------------- |
+| `id` là duy nhất | Không sợ trùng như `username` hay `email`                |
+| Nhanh hơn        | Truy vấn DB bằng `id` nhanh hơn nhiều                    |
+| An toàn hơn      | Không lộ thông tin nhạy cảm (như `username` hay `email`) |
